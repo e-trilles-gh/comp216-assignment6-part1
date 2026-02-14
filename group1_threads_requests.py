@@ -18,21 +18,43 @@ img_urls = [
     ]
 
 def download_file(file_url):
+    
+    #splits the url with '/' as the delimeter 
+    #and store it into a list    
     split_url = file_url.split('/')
+    
+    #extracts the last item from the list
+    #and append .png to save it as png file    
     file_name = f'{split_url[-1]}.png'
+    
+    #joins the file name with the folder name where the downloaded files will
+    #be saved    
     path_name = f'download_here/{file_name}' #change the location of download folder
+    
+    #makes a HTTP GET request
     req = requests.get(file_url, stream=True)
 
     with open(path_name, 'wb') as fd:
         print(f'downloading {file_name} file...')
+        
+        #downloads the file into small byte and
+        #store it in chunk variable        
         for chunk in req.iter_content(chunk_size=50):
+            
+            #writes every chunk into a file
             fd.write(chunk)
         print(f'...{file_name} file download completed\n')
 
 def time_counter(func, img_url):
+    #records the current time before the download starts
     start = perf_counter()
+    
+    #calls the function that will be tested
     download_type = func(img_url)
+    
+    #records the current time when the download ends
     end = perf_counter()
+    
     print(f'Time elapsed for {download_type} download: {round(end-start)} seconds\n')    
 
 def sequential_download(img_urls):
@@ -41,18 +63,30 @@ def sequential_download(img_urls):
     return 'sequential'
 
 def thread_download(img_urls):
+    #holds the list of threads that will be made
     threads = list()
     for img_url in img_urls:
+        
+        #extracts name for the running thread from url
         thread_name = img_url.split('/')[-1]
+        
+        #creates thread for the method
+        #with url argument        
         th = threading.Thread(
             target = download_file,
             name = thread_name,
             args = (img_url,)
         )
+        
+        #appends each created thread to the list
         threads.append(th)
+        
+        #starts the thread after being created
         th.start()
         
     for thread in threads:
+        #ensures that all threads are finished before
+        #proceeding to the rest of the code        
         thread.join()
     
     return 'thread'
